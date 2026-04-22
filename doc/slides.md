@@ -38,6 +38,45 @@ jshell> /open repl.java
 jshell> /exit
 ```
 ---
+# main() bez klasy + java.lang.IO
+```Java
+void main() {  // Java 25
+    IO.println("Hello World");
+    String line = IO.readln();
+}
+```
+---
+# module imports
+
+```Java
+import javax.xml.*; 
+import javax.xml.parsers.*; 
+import javax.xml.stream.*;
+// Instead, just use:
+
+import module java.xml;
+
+```
+---
+# Markdown documentation comments
+
+```Java
+   // Java 23
+/// Fetches a **random cat fact** from the API.
+/// **Features:**
+/// - Uses a remote API
+/// - Returns a simple `String`
+///
+/// @return A random cat fact
+/// @throws IOException If the API call fails
+///
+/// | Latin | Greek |
+/// |-------|-------|
+/// | a     | alpha |
+/// | b     | beta  |
+```
+
+---
 # Scanner
 ```Java
         Scanner scanner = new Scanner("hello,1,FF");
@@ -52,16 +91,9 @@ jshell> /exit
         assertEquals(255,ff);
 ```
 ---
-# main() bez klasy
-```Java
-void main() {  //21..25
-    System.out.println("Hello World");
-}
-```
----
 # **język...**
 ---
-# dedukcja typu zmiennej
+# variable type deduction
 ```Java
 // Java 10
 var x = 17L;
@@ -77,7 +109,22 @@ var data = obj.prcoess();
 var result = collection.stream().findFirst().orElse(0);       
 ```
 ---
-# bloki tekstowe
+# unnamed variables
+```Java
+for (Order _ : orders)  { total++; }   // Java 22
+        
+try { ... }
+catch (Exception _) { ... }                // Unnamed variable
+catch (Throwable _) { ... }                // Unnamed variable
+       
+try (var _ = ScopedContext.acquire()) {    // Unnamed variable
+... no use of acquired resource ...
+}
+
+if (r instanceof ColoredPoint(Point(int x, int y), _)) { ... }
+```
+---
+# multiline text
 ```Java
 //Java 13
     String text = """
@@ -91,23 +138,34 @@ Litwo, Ojczyzno moja! ty jesteś jak zdrowie;
 ```
 ---
 # record
-
+```Java
+// Java 14..19
+public record Money(int value, String currency) {
+    public Money{
+        if(!"PLN".equals(currency)){
+            throw new IllegalArgumentException();
+        }
+    }
+}
+```
 ---
-# instanceof z rzutowaniem 
-### (pattern matching)
+# instanceof pattern matching
 
 ```Java
 if (animal instanceof Cat cat) { // Java 14..16
         cat.meow();
 }
-```
-```Java
+
+if (obj instanceof Point(int x, int y)) { //Java 21 dekonstrukcja rekordów
+        System.out.println(x+y);
+}
+
 if (object instanceof int number) { //Java 25 +typy podstawowe
         int x2 = number + number;
 }
 ```
 ---
-# switch eexpression
+# switch 1: expression
 Konstrukcja `switch() {case _ : _; break;}` na typach podstawowych
 enum od Javy 5, String od Javy 7
 ```Java
@@ -122,8 +180,7 @@ var result = switch (month) {           //Java 13
 ```
 ---
 
-# switch pattern matching + guards
-### (dopasowanie i rzutowanie typów)
+# switch 2: pattern matching + guards
 ```Java
 static double getDoubleUsingSwitch(Object o) {
     return switch (o) {         // Java 17..21
@@ -137,7 +194,7 @@ static double getDoubleUsingSwitch(Object o) {
 }
 ```
 --- 
-# opóźnione wołanie innego konstruktora 
+# internal constructor calls
 ```Java
 class Employee extends Person {
     final String name;
@@ -151,15 +208,64 @@ class Employee extends Person {
 }
 ```
 ---
-# inheritance control
+# controlled inheritance
 ```Java
-sealed class Employee permits WhiteCollar, BlueCollar {}
+sealed abstract class Ball permits RedBall, BlueBall, GreenBall { }
+final  class RedBall   extends Ball { }
+final  class BlueBall  extends Ball { }
+final  class GreenBall extends Ball { }
 ```
 
 ---
 # JVM
 ---
-# precyzyjny NullPointerException
-Java 14
+# nice NullPointerException
+Java 14 + debug info
+
+Cannot invoke
+"com.example.MyClass$Employee.getName()"
+because "employee" is null
+
+---
+# Garbage Collectors
+
+- GC1
+- ZGC z krótszymi czasami przestojów
+- Shenandoah
+
+Compact Object Headers 12->8 bytes
 
 
+---
+# Library
+- Sequenced Collections // Java 21
+- Foreign Function/Memory Api zamiast JNI // Java 22
+- usunięcie SecurityManager   //Java 24
+- blokowanie dostępu do Java internal API
+
+---
+# Stream Gatherers
+```Java
+// Java 24, gotowce np. windowSliding, windowFixed
+stream.gather(Gatherers.windowSliding(2))
+      .filter(window -> (window.size() == 2
+                && isSuspicious(window.get(0),window.get(1))))
+      .toList();
+}
+```
+---
+# Virtual Threads (project Loom)
++ ScopedValue (zastąpi ThreadLocal)
++ structured concurrency
+```Java
+try (var scope = StructuredTaskScope.<String>open()) {
+    var userTask = scope.fork(() -> fetchUser());
+    var orderTask = scope.fork(() -> fetchOrder());
+    scope.join();
+    ...
+}
+```
+---
+# Vector API
+
+---
