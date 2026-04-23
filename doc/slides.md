@@ -16,7 +16,7 @@ Krzysztof Bardziński
 
 ---
 
-# **ciekawostki...**
+# <!--fit--> **ciekawostki**
 
 ---
 # REPL
@@ -26,15 +26,15 @@ $JAVA_HOME/bin/jshell -v
 ```bash
 jshell> void helloWorld() { System.out.println("Hello world"); }
 |  created method helloWorld()
+
 jshell> helloWorld()
 Hello world
+
 jshell> /help
-jshell> /var
-jshell> /methods
-jshell> /list
-jshell> /history
-jshell> /save repl.java
-jshell> /open repl.java
+jshell> /* show status: /var /methods /list /history */
+
+jshell> /save myrepl.java
+jshell> /open myrepl.java
 jshell> /exit
 ```
 ---
@@ -91,21 +91,26 @@ import module java.xml;
         assertEquals(255,ff);
 ```
 ---
-# **język...**
+# <!--fit--> **java language**
 ---
-# variable type deduction
+# diamond operator
+```Java
+Map<String, List<String>> map = new HashMap<>(); //Java 9
+```
+---
+# variable type inference
 ```Java
 // Java 10
 var x = 17L;
 var result = new HashMap<String,Person>();
 
-// nie zadziała
-var undrfined;
+// does not compile!
+var undefined;
 var empty = null;
-var arr = { 1, 2, 3 }; // wymagany docelowy typ tablicowy
+var arr = { 1, 2, 3 }; // array type spec required
 
-//nie zalecane
-var data = obj.prcoess();
+// not recommended - reader has to guess type
+var data = obj.process();
 var result = collection.stream().findFirst().orElse(0);       
 ```
 ---
@@ -131,25 +136,47 @@ if (r instanceof ColoredPoint(Point(int x, int y), _)) { ... }
         Litwo, Ojczyzno moja! ty jesteś jak zdrowie;
             Ile cię trzeba cenić, ten tylko się dowie,
 ```
-Kompilator usunie wcięcia i wyrówna tekst do kolumny najbardziej na lewo.
+Kompilator usunie wcięcia i wyrówna tekst 
+do kolumny najbardziej na lewo.
 ```
 Litwo, Ojczyzno moja! ty jesteś jak zdrowie;
     Ile cię trzeba cenić, ten tylko się dowie,
 ```
 ---
-# record
+# **record** + compact constructor
 ```Java
 // Java 14..19
 public record Money(int value, String currency) {
+
     public Money{
         if(!"PLN".equals(currency)){
             throw new IllegalArgumentException();
         }
     }
+
+    // auto getters: value(), currency()
+    // methods: toString(), equals(obj), hashMap()
 }
 ```
 ---
-# instanceof pattern matching
+# **interface** default method,
+### static method
+```Java
+interface MyInterface {
+    String message();
+
+    default String wrappedMessage(String prefix, String postfix){
+        return prefix + message() + postfix;
+    }
+
+    static int doubleValue(int value) {
+        return value + value;
+    }
+}
+```
+
+---
+# **instanceof** pattern matching
 
 ```Java
 if (animal instanceof Cat cat) { // Java 14..16
@@ -165,31 +192,35 @@ if (object instanceof int number) { //Java 25 +typy podstawowe
 }
 ```
 ---
-# switch 1: expression
-Konstrukcja `switch() {case _ : _; break;}` na typach podstawowych
-enum od Javy 5, String od Javy 7
+# **switch** expression
+
 ```Java
-var result = switch (month) {           //Java 13
+var result = switch (month) { 
+              //Java 13
         case JANUARY, JUNE, JULY -> 3;
         case MARCH, MAY -> {
             int monthLength = month.toString().length();
             yield monthLength * 4; //return jest zabronione
         }
-        default -> 0; // wymagane jeśli nie wymieniono wszystkich opcji enum
+
+        default -> 0; // wymagane jeśli nie wymieniono wszystkich opcji enum 
+
 };
 ```
 ---
 
-# switch 2: pattern matching + guards
+# **switch** pattern matching + guards
 ```Java
 static double getDoubleUsingSwitch(Object o) {
+    
     return switch (o) {         // Java 17..21
-        case Integer i -> i.doubleValue();  
-        case Float f -> f.doubleValue();
-        case String s when s.length() >0 -> Double.parseDouble(s);
-        case null -> -1d;       // dopuszczalne a nawet zalecane przeciw NPE
-        case byte b -> 255d;    // Java 25 dopuszcza typy podstawowe
-        default -> 0d;
+
+        case Integer i                      -> i.doubleValue();  
+        case String s when s.length() > 0   -> Double.parseDouble(s);
+        case null       -> -1d;     // dopuszczalne a nawet zalecane przeciw NPE
+        case byte b     -> 255d;    // Java 25 dopuszcza typy podstawowe
+
+        default -> 0d; //niepotrzebne przy wszystkich opcjach sealed class
     };
 }
 ```
@@ -202,7 +233,9 @@ class Employee extends Person {
     Employee(String name, int age) {
         if (age < 18 || age > 67)
             throw new IllegalArgumentException("Age must be between 18 and 67");
-        super(age); // opóźnione super()/this()  Java 25
+
+        super(age); // opóźnione super() / this()  Java 25
+
         this.name = name;
     }
 }
@@ -210,14 +243,17 @@ class Employee extends Person {
 ---
 # controlled inheritance
 ```Java
+// for class or interface
 sealed abstract class Ball permits RedBall, BlueBall, GreenBall { }
+
 final  class RedBall   extends Ball { }
 final  class BlueBall  extends Ball { }
 final  class GreenBall extends Ball { }
 ```
 
 ---
-# JVM
+# <!--fit--> **JVM**
+
 ---
 # nice NullPointerException
 Java 14 + debug info
@@ -233,18 +269,95 @@ because "employee" is null
 - ZGC z krótszymi czasami przestojów
 - Shenandoah
 
+
 Compact Object Headers 12->8 bytes
 
 
 ---
-# Library
-- Sequenced Collections // Java 21
-- Foreign Function/Memory Api zamiast JNI // Java 22
-- usunięcie SecurityManager   //Java 24
-- blokowanie dostępu do Java internal API
+# <!--fit--> **library**
 
 ---
-# Stream Gatherers
+# Objects
+```Java
+String v = Objects.requireNonNullElse(value, "default");
+
+//predicates
+Objects.isNull(val)
+Objects.nonNull(val)
+
+stream.filter(Objects::nonNull).toList();
+```
+---
+# Optional 
+```Java
+Optional<Config> cfg = primary()
+    .or(this::secondary)
+    .or(this::defaults);
+
+optional.stream().forEach(IO.println);
+
+optional.ifPresentOrElse(consumer, runnable);
+```
+---
+# easy immutable collections
+```Java
+var list1 = List.of(1,2,3);
+
+var list2 = List.copyOf(mutableList);
+
+Map<String, Integer> m1 = Map.of("x", 11, "y", 12, "z", 20)
+
+```
+---
+# sequential collections
+```Java
+var first = list.getFirst(); // can throw NoSuchElementException
+
+var last = list.getLast();
+
+var listR = list.reversed();
+```
+---
+# functional interfaces:
+
+- Function, BiFunction
+- Predicate
+- Supplier
+- Consumer, BiConsumer
+---
+# Stream
+```Java
+Stream<String> s =
+    Stream.ofNullable(val); //empty or 1 item stream
+
+stream.flatmap(...) 
++ stream.mapMulti( (items, collector) -> .. collector.accept(x) )
+
+Predicate isSenior = (Person p) -> p.getAge() > 65;
+stream.filter( not(isSenior)).toList();
+```
+---
+# Collectors grouping
+```Java
+Collector<String, ?, Map<Integer,List<String>>> groupingByLength = 
+    groupingBy((String name)-> name.length(), 
+       mapping((String name)-> name.toUpperCase(), toList()));
+
+var namesByLength = words.stream().collect(groupingByLength);
+```
+---
+# Collectors teeing
+```Java
+var result = items.stream().collect(
+    Collectors.teeing(
+        Collectors.counting(),
+        Collectors.summingDouble(Item::price),
+        Stats::new
+    )
+);
+```
+---
+# Stream gatherers
 ```Java
 // Java 24, gotowce np. windowSliding, windowFixed
 stream.gather(Gatherers.windowSliding(2))
@@ -253,6 +366,29 @@ stream.gather(Gatherers.windowSliding(2))
       .toList();
 }
 ```
+---
+# "Pair"
+- javafx *Pair*, *ImmutablePair* 
+
+- org.apache.commons.lang3.tuple  *MutablePair*, *ImmutablePair* (abstract Pair) 
+
+- vavr *Tuple2* (immutable) 
+
+- jdk *AbstractMap.SimpleEntry*, *AbstractMap.SimpleImmutableEntry*
+```Java 
+var pair = Map.entry("x", 13)
+```
+---
+
+- klient HTTP/3
+- Foreign Function/Memory Api zamiast JNI // Java 22
+- usunięcie SecurityManager   //Java 24
+- blokowanie dostępu do Java internal API
+
+
+---
+
+# <!--fit--> **(near) future**
 ---
 # Virtual Threads (project Loom)
 + ScopedValue (zastąpi ThreadLocal)
@@ -266,6 +402,35 @@ try (var scope = StructuredTaskScope.<String>open()) {
 }
 ```
 ---
-# Vector API
+# StableValue / lazy constant
+```Java
+private final StableValue<User> user =
+    StableValue.of(this::loadUser);
+
+user.get();
+```
+---
+# Vector API (Project Valhalla)
+Wykorzystanie rozkazów SIMD CPU
+do obliczeń wektorowych.
 
 ---
+# <!--fit--> **not too slow**
+- extra paid support for Oracle JDK 8, 11
+- Spring Boot requirements
+-- 2.xx JDK 8..17
+-- 3.xx JDK 17+
+-- 4.xx JDK 17+
+
+---
+# <!--fit--> **not so fast...**
+- flatMap laziness fixed in JDK 10
+- list.remove(N) difference between Collection<Integer> and ArrayList<Integer>  
+- ARM bugs in JDK
+- found bugs in Virtual Threads
+- **watch version of JDK in your IDE and pipeline** :)
+
+---
+# <!--fit--> **The End**
+
+Any questions?
