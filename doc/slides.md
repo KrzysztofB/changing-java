@@ -431,6 +431,14 @@ do obliczeń wektorowych.
 - **watch version of JDK in your IDE and pipeline** :)
 
 ---
+# <!--fit--> **links........**
+
+https://javaalmanac.io/
+https://javaevolved.github.io
+
+https://pragprog.com/titles/vscajava/cruising-along-with-java/
+
+---
 # <!--fit--> **The End**
 
 Any questions?
